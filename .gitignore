@@ -4,3 +4,4 @@ quantificationlib/
 results/
 venv/
 model.pt
+*.zip

@@ -73,7 +73,7 @@ def make_preds(model, loader, device):
     return y_pred, y_probs
 
 
-def main():
+def predict():
     # Load the data
     trainpreds = np.genfromtxt('results/trainpred.csv', delimiter=',')
     traintrue = np.genfromtxt('results/traintrue.csv', delimiter=',')
@@ -123,7 +123,3 @@ def main():
 
     print(pd.DataFrame({'CC': resultsCC, 'AC': resultsAC, 'HDy': resultsHDy}, index=classes))
     print("Time taken: %s seconds." % timetaken)
-
-
-if __name__ == '__main__':
-    main()
