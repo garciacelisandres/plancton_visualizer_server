@@ -8,8 +8,8 @@ def download(url, save_path, link_element_id):
     html = requests.get(url)
     if check_html(html):
         soup = BeautifulSoup(html.text, features="html.parser")
-        link = soup.find_all("a", {"id": link_element_id})
-        download_url = parse_url(url, link)
+        bin_header = soup.find("a", {"id": link_element_id}).contents[0]
+        download_url = parse_url(url, bin_header)
         download_zip(download_url, save_path)
 
 
@@ -26,7 +26,7 @@ def parse_url(url, link):
     components = urlparse(url)
     scheme = components[0]
     netloc = components[1]
-    final_url = '%s://%s/%s' % (scheme, netloc, link.replace('/', '', 1))
+    final_url = '%s://%s/%s' % (scheme, netloc, "mvco/" + link + ".zip")
     return str(final_url)
 
 
@@ -39,4 +39,4 @@ def download_zip(url, save_path, chunk_size=128):
 
 
 if __name__ == "__main__":
-    download("https://ifcb-data.whoi.edu/timeline?dataset=mvco", "./", "download-zip")
+    download("https://ifcb-data.whoi.edu/timeline?dataset=mvco", "./", "bin-header")
