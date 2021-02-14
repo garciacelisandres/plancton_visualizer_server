@@ -26,4 +26,4 @@ def unzip_current_sample(zip_file, destination_dir):
 
 
 if __name__ == "__main__":
-    load("D20201211T213045_IFCB109.zip", "production")
+    load("D20201211T213045_IFCB109.zip", "../production")

@@ -16,7 +16,7 @@ from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-if not os.path.isdir("quantificationlib"):
+if not os.path.isdir("../quantificationlib"):
     print("You should have the quantification library in this directory")
     sys.exit()
 
@@ -81,7 +81,7 @@ def predict():
     classes = np.genfromtxt('results/classes.csv', dtype='str')
 
     # Fit quantification models
-    sys.path.insert(0, os.path.abspath("quantificationlib"))
+    sys.path.insert(0, os.path.abspath("../quantificationlib"))
     from quantificationlib import classify_and_count
     from quantificationlib import distribution_matching
 
@@ -100,7 +100,7 @@ def predict():
     ])
 
     # This directory should be the directory with the new images... using validation for simplicity here
-    prod_dset = ProductionDataset("production", transform=prod_transform)
+    prod_dset = ProductionDataset("../production", transform=prod_transform)
     prod_loader = DataLoader(prod_dset, batch_size=256, num_workers=4)
     print("Loaded %d images " % len(prod_dset))
 

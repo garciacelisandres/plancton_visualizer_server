@@ -39,4 +39,4 @@ def download_zip(url, save_path, chunk_size=128):
 
 
 if __name__ == "__main__":
-    download("https://ifcb-data.whoi.edu/timeline?dataset=mvco", "./", "bin-header")
+    download("https://ifcb-data.whoi.edu/timeline?dataset=mvco", "../", "bin-header")
