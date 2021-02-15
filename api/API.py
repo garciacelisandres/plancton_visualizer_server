@@ -1,12 +1,14 @@
 from os import environ
 
 from flask import Flask
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from flask_cors import CORS
 
 from pymongo import MongoClient
-
 from database import Database
+
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -18,13 +20,14 @@ app.config["DB"] = MongoClient("%s://%s:%s" % (db_scheme, db_netloc, db_port)).p
 
 
 @app.route("/api/v0.1", methods=["GET"])
-def fetch_api_links():
+def fetch_api_endpoints():
     return jsonify({
         "status": 200,
         "links": [
             "/api/v0.1",
             "/api/v0.1/samples",
-            "/api/v0.1/samples/classes"
+            "/api/v0.1/samples/classes",
+            "/api/v0.1/samples/classes/:class_id:"
         ]
     })
 
@@ -53,10 +56,7 @@ def fetch_samples():
             "code": "Bad request. \"start_time\" cannot be greater than \"end_time\"."
         })
     except InterruptedError:
-        return jsonify({
-            "status": 500,
-            "code": "Internal server error. Please, try again."
-        })
+        abort(500)
 
 
 @app.route("/api/v0.1/samples/classes", methods=["GET"])
@@ -68,10 +68,7 @@ def fetch_classes():
             "classes": classes
         })
     except InterruptedError:
-        return jsonify({
-            "status": 500,
-            "code": "Internal server error. Please, try again."
-        })
+        abort(500)
 
 
 @app.route("/api/v0.1/samples/classes/<int:class_id>", methods=["GET"])
@@ -83,10 +80,28 @@ def fetch_class(class_id):
             "class": class_fetched
         })
     except InterruptedError:
-        return jsonify({
-            "status": 500,
-            "code": "Internal server error. Please, try again."
-        })
+        abort(500)
+
+
+@app.route("/api/v0.1/<path:text>")
+def not_found(text):
+    abort(404)
+
+
+@app.errorhandler(404)
+def not_found_handler(err):
+    return jsonify({
+        "status": 404,
+        "code": "Resource not found."
+    }), 404
+
+
+@app.errorhandler(500)
+def not_found_handler(err):
+    return jsonify({
+        "status": 500,
+        "code": "Internal server error. Please, try again."
+    })
 
 
 app.run()
