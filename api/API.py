@@ -5,7 +5,8 @@ from flask import request, jsonify, abort
 from flask_cors import CORS
 
 from pymongo import MongoClient
-from database import Database
+
+from api import BackgroundJob, get_samples, get_classes, get_class
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -45,7 +46,7 @@ def fetch_samples():
     start_time = request_body["start_time"]
     end_time = request_body["end_time"]
     try:
-        sample_list = Database.get_samples(app.config["DB"], sample_classes, start_time, end_time)
+        sample_list = get_samples(app.config["DB"], sample_classes, start_time, end_time)
         return jsonify({
             "status": 200,
             "samples": sample_list
@@ -62,7 +63,7 @@ def fetch_samples():
 @app.route("/api/v0.1/samples/classes", methods=["GET"])
 def fetch_classes():
     try:
-        classes = Database.get_classes(app.config["DB"])
+        classes = get_classes(app.config["DB"])
         return jsonify({
             "status": 200,
             "classes": classes
@@ -74,7 +75,7 @@ def fetch_classes():
 @app.route("/api/v0.1/samples/classes/<int:class_id>", methods=["GET"])
 def fetch_class(class_id):
     try:
-        class_fetched = Database.get_class(app.config["DB"], class_id)
+        class_fetched = get_class(app.config["DB"], class_id)
         return jsonify({
             "status": 200,
             "class": class_fetched
@@ -89,7 +90,7 @@ def not_found(text):
 
 
 @app.errorhandler(404)
-def not_found_handler(err):
+def not_found_handler(_):
     return jsonify({
         "status": 404,
         "code": "Resource not found."
@@ -97,11 +98,14 @@ def not_found_handler(err):
 
 
 @app.errorhandler(500)
-def not_found_handler(err):
+def not_found_handler(_):
     return jsonify({
         "status": 500,
         "code": "Internal server error. Please, try again."
     })
 
+
+# Start background job
+bgjob = BackgroundJob(30)
 
 app.run()

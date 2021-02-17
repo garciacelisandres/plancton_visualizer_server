@@ -4,13 +4,16 @@ import requests
 from bs4 import BeautifulSoup
 
 
-def download(url, save_path, link_element_id):
+def download(url: str, save_path: str, link_element_id: str) -> str:
     html = requests.get(url)
     if check_html(html):
         soup = BeautifulSoup(html.text, features="html.parser")
         bin_header = soup.find("a", {"id": link_element_id}).contents[0]
         download_url = parse_url(url, bin_header)
-        download_zip(download_url, save_path)
+        filename = download_zip(download_url, save_path)
+    else:
+        filename = ""
+    return filename
 
 
 def check_html(html):
@@ -36,7 +39,4 @@ def download_zip(url, save_path, chunk_size=128):
     with open(save_path, 'wb') as fd:
         for chunk in r.iter_content(chunk_size=chunk_size):
             fd.write(chunk)
-
-
-if __name__ == "__main__":
-    download("https://ifcb-data.whoi.edu/timeline?dataset=mvco", "../", "bin-header")
+    return save_path
