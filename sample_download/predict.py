@@ -5,18 +5,20 @@ import time
 
 import numpy as np
 import pandas as pd
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as nnf
 import torchvision
 import torchvision.transforms as T
-
 from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-if not os.path.isdir("../quantificationlib"):
+from database.database_api import insert_sample
+
+from datetime import datetime
+
+if not os.path.isdir("quantificationlib"):
     print("You should have the quantification library in this directory")
     sys.exit()
 
@@ -37,6 +39,13 @@ class ProductionDataset(Dataset):
         image = Image.open(img_loc).convert("RGB")
         tensor_image = self.transform(image)
         return tensor_image
+
+
+def get_sample_name_and_date(filename: str) -> (str, datetime):
+    name = filename.split("/")[-1].replace(".zip", "")
+    day_hour_list = name.split("_")[0]
+    date_from_name = datetime.strptime(day_hour_list, "D%Y%m%dT%H%M%S")
+    return name, date_from_name
 
 
 # Adding all neccesary functions
@@ -73,7 +82,7 @@ def make_preds(model, loader, device):
     return y_pred, y_probs
 
 
-def predict():
+def predict(filename):
     # Load the data
     trainpreds = np.genfromtxt('results/trainpred.csv', delimiter=',')
     traintrue = np.genfromtxt('results/traintrue.csv', delimiter=',')
@@ -81,16 +90,15 @@ def predict():
     classes = np.genfromtxt('results/classes.csv', dtype='str')
 
     # Fit quantification models
-    sys.path.insert(0, os.path.abspath("../quantificationlib"))
+    sys.path.insert(0, os.path.abspath("quantificationlib"))
     from quantificationlib import classify_and_count
-    from quantificationlib import distribution_matching
 
-    quantifierCC = classify_and_count.CC(verbose=1)
-    quantifierAC = classify_and_count.AC(verbose=1)
-    quantifierHDy = distribution_matching.DFy(verbose=1)
-    quantifierCC.fit(None, traintrue, predictions_train=trainpreds)
-    quantifierAC.fit(None, traintrue, predictions_train=trainprobs)
-    quantifierHDy.fit(None, traintrue, predictions_train=trainprobs)
+    quantifier_cc = classify_and_count.CC(verbose=1)
+    # quantifierAC = classify_and_count.AC(verbose=1)
+    # quantifierHDy = distribution_matching.DFy(verbose=1)
+    quantifier_cc.fit(None, traintrue, predictions_train=trainpreds)
+    # quantifierAC.fit(None, traintrue, predictions_train=trainprobs)
+    # quantifierHDy.fit(None, traintrue, predictions_train=trainprobs)
 
     prod_transform = T.Compose([
         T.Resize(size=256),
@@ -100,7 +108,7 @@ def predict():
     ])
 
     # This directory should be the directory with the new images... using validation for simplicity here
-    prod_dset = ProductionDataset("../production", transform=prod_transform)
+    prod_dset = ProductionDataset("production", transform=prod_transform)
     prod_loader = DataLoader(prod_dset, batch_size=256, num_workers=4)
     print("Loaded %d images " % len(prod_dset))
 
@@ -117,9 +125,17 @@ def predict():
     y_pred = np.vstack(y_pred)
     y_probs = np.vstack(y_probs)
 
-    resultsCC = quantifierCC.predict(None, predictions_test=y_pred)
-    resultsAC = quantifierAC.predict(None, predictions_test=y_pred)
-    resultsHDy = quantifierHDy.predict(None, predictions_test=y_probs)
+    results_cc = quantifier_cc.predict(None, predictions_test=y_pred)
+    # resultsAC = quantifierAC.predict(None, predictions_test=y_pred)
+    # resultsHDy = quantifierHDy.predict(None, predictions_test=y_probs)
 
-    print(pd.DataFrame({'CC': resultsCC, 'AC': resultsAC, 'HDy': resultsHDy}, index=classes))
+    # df_dict = pd.DataFrame({'CC': resultsCC, 'AC': resultsAC, 'HDy': resultsHDy}, index=classes)
+    # print(df_dict)
     print("Time taken: %s seconds." % timetaken)
+    sample_dict = pd.DataFrame({"CC": results_cc}, index=classes).to_dict()["CC"]
+    (name, date_retrieved) = get_sample_name_and_date(filename)
+    insert_sample(None, name, date_retrieved, sample_dict)
+
+
+if __name__ == "__main__":
+    predict("./D20201211T204531_IFCB109.zip")

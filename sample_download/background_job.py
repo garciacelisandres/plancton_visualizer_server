@@ -2,7 +2,7 @@ import threading
 import time
 from os import environ
 
-from sampleDownload import download, load, predict
+from sample_download import download, load, predict
 
 
 class BackgroundJob:
@@ -18,11 +18,11 @@ class BackgroundJob:
             print("download")
             print("load")
             print("predict")
-            # filename = download(
-            #     environ.get("DOWNLOAD_URL"),
-            #     environ.get("DOWNLOAD_SAVE_PATH"),
-            #     environ.get("DOWNLOAD_LINK_ELEMENT_ID"))
-            # load(filename, environ.get("LOAD_DESTINATION_DIR"))
-            # predict()
+            filename = download(
+                environ.get("DOWNLOAD_URL"),
+                environ.get("DOWNLOAD_SAVE_PATH"),
+                environ.get("DOWNLOAD_LINK_ELEMENT_ID"))
+            load(filename, environ.get("LOAD_DESTINATION_DIR"))
+            predict(filename.split(".")[0])
 
             time.sleep(self.interval)
