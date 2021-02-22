@@ -22,15 +22,18 @@ class Database:
                 } for class_name in sample_dict]
             }
             self.db.samples.insert_one(sample)
-        except Exception:
+        except Exception as e:
             print("Error while inserting sample.")
+            print(e)
 
-    def _join_classes(self, db_classes, sample_dict):
+    def _join_classes(self, db_classes: list, sample_dict):
         classes_dict = {}
         db_class_names = [class_item["name"] for class_item in db_classes]
         for class_name in sample_dict.keys():
             if class_name in db_class_names:
-                classes_dict[class_name] = db_classes[class_name]
+                classes_dict[class_name] = next(
+                    db_class["_id"] for db_class in db_classes if db_class["name"] == class_name
+                )
             else:
                 class_id = self.insert_class(class_name)
                 classes_dict[class_name] = class_id

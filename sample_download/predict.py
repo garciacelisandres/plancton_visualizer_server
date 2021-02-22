@@ -14,11 +14,11 @@ from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-from database.database_api import insert_sample
+from database.database_api import Database
 
 from datetime import datetime
 
-if not os.path.isdir("quantificationlib"):
+if not os.path.isdir("../quantificationlib"):
     print("You should have the quantification library in this directory")
     sys.exit()
 
@@ -56,7 +56,7 @@ def load_network(device):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     # Define loss function
     loss_fn = nn.CrossEntropyLoss()
-    model.load_state_dict(torch.load("model.pt", map_location=device), strict=False)
+    model.load_state_dict(torch.load("../model.pt", map_location=device), strict=False)
     model = model.to(device)  # Send model to gpu
     return model, loss_fn
 
@@ -82,15 +82,15 @@ def make_preds(model, loader, device):
     return y_pred, y_probs
 
 
-def predict(filename):
+def predict(filename, db):
     # Load the data
-    trainpreds = np.genfromtxt('results/trainpred.csv', delimiter=',')
-    traintrue = np.genfromtxt('results/traintrue.csv', delimiter=',')
-    trainprobs = np.genfromtxt('results/trainprobs.csv', delimiter=',')
-    classes = np.genfromtxt('results/classes.csv', dtype='str')
+    trainpreds = np.genfromtxt('../results/trainpred.csv', delimiter=',')
+    traintrue = np.genfromtxt('../results/traintrue.csv', delimiter=',')
+    trainprobs = np.genfromtxt('../results/trainprobs.csv', delimiter=',')
+    classes = np.genfromtxt('../results/classes.csv', dtype='str')
 
     # Fit quantification models
-    sys.path.insert(0, os.path.abspath("quantificationlib"))
+    sys.path.insert(0, os.path.abspath("../quantificationlib"))
     from quantificationlib import classify_and_count
 
     quantifier_cc = classify_and_count.CC(verbose=1)
@@ -108,7 +108,7 @@ def predict(filename):
     ])
 
     # This directory should be the directory with the new images... using validation for simplicity here
-    prod_dset = ProductionDataset("production", transform=prod_transform)
+    prod_dset = ProductionDataset("../production", transform=prod_transform)
     prod_loader = DataLoader(prod_dset, batch_size=256, num_workers=4)
     print("Loaded %d images " % len(prod_dset))
 
@@ -134,8 +134,5 @@ def predict(filename):
     print("Time taken: %s seconds." % timetaken)
     sample_dict = pd.DataFrame({"CC": results_cc}, index=classes).to_dict()["CC"]
     (name, date_retrieved) = get_sample_name_and_date(filename)
-    insert_sample(None, name, date_retrieved, sample_dict)
 
-
-if __name__ == "__main__":
-    predict("./D20201211T204531_IFCB109.zip")
+    db.insert_sample(name, date_retrieved, sample_dict)

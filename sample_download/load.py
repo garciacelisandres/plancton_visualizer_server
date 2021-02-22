@@ -25,7 +25,3 @@ def unzip_current_sample(zip_file, destination_dir):
     for f in file_list:
         if not f.endswith(".png"):
             os.remove(os.path.join(destination_dir, f))
-
-
-if __name__ == "__main__":
-    load("./D20201211T204531_IFCB109.zip", "./production")

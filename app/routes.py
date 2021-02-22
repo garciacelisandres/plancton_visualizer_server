@@ -3,6 +3,8 @@ from flask import url_for, request, abort
 from app import app
 from app.util import get_db, build_response
 
+from datetime import datetime
+
 
 @app.route("/api/v0.1", methods=["GET"])
 def fetch_api_endpoints():
@@ -19,9 +21,12 @@ def fetch_samples():
     request_body = request.get_json(force=True)
     if not request_body:
         abort(400, "Bad request.")
-    sample_classes = request_body["sample_classes"]
-    start_time = request_body["start_time"]
-    end_time = request_body["end_time"]
+    try:
+        sample_classes = request_body["sample_classes"]
+    except KeyError:
+        sample_classes = None
+    start_time = datetime.utcfromtimestamp(request_body["start_time"])
+    end_time = datetime.utcfromtimestamp(request_body["end_time"])
     try:
         sample_list = get_db(app).get_samples(sample_classes, start_time, end_time)
         return build_response(
