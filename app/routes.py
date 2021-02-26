@@ -18,15 +18,9 @@ def fetch_api_endpoints():
 
 @app.route("/api/v0.1/samples", methods=["GET"])
 def fetch_samples():
-    request_body = request.get_json(force=True)
-    if not request_body:
-        abort(400, "Bad request.")
-    try:
-        sample_classes = request_body["sample_classes"]
-    except KeyError:
-        sample_classes = None
-    start_time = datetime.utcfromtimestamp(request_body["start_time"])
-    end_time = datetime.utcfromtimestamp(request_body["end_time"])
+    sample_classes = request.args.get("sample_classes")
+    start_time = datetime.utcfromtimestamp(int(request.args["start_time"]))
+    end_time = datetime.utcfromtimestamp(int(request.args["end_time"]))
     try:
         sample_list = get_db(app).get_samples(sample_classes, start_time, end_time)
         return build_response(
