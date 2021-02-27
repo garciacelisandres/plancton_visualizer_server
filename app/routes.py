@@ -19,8 +19,12 @@ def fetch_api_endpoints():
 @app.route("/api/v0.1/samples", methods=["GET"])
 def fetch_samples():
     sample_classes = request.args.get("sample_classes")
-    start_time = datetime.utcfromtimestamp(int(request.args["start_time"]))
-    end_time = datetime.utcfromtimestamp(int(request.args["end_time"]))
+    start_time = request.args.get("start_time")
+    end_time = request.args.get("end_time")
+    if not (start_time is None):
+        start_time = datetime.utcfromtimestamp(int(start_time))
+    if not (end_time is None):
+        end_time = datetime.utcfromtimestamp(int(end_time))
     try:
         sample_list = get_db(app).get_samples(sample_classes, start_time, end_time)
         return build_response(

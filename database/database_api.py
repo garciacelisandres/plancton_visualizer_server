@@ -40,15 +40,17 @@ class Database:
         return classes_dict
 
     def get_samples(self, sample_classes, start_time, end_time):
-        if start_time > end_time:
-            raise ValueError
         try:
-            find_dict = {
-                "$and": [
-                    {"date_retrieved": {"$gte": start_time}},
-                    {"date_retrieved": {"$lte": end_time}}
-                ]
-            }
+            find_dict = {}
+            dates_list = []
+            if start_time and end_time and start_time > end_time:
+                raise ValueError
+            if not (start_time is None):
+                dates_list.append({"date_retrieved": {"$gte": start_time}})
+            if not (end_time is None):
+                dates_list.append({"date_retrieved": {"$lte": end_time}})
+            if len(dates_list) > 0:
+                find_dict["$and"] = dates_list
             if not (sample_classes is None or len(sample_classes) == 0):
                 find_dict["sample_classes"] = {"$in": sample_classes}
             samples_list = [sample for sample in self.db.samples.find(find_dict)]
