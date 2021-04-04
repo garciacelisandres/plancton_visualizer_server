@@ -1,5 +1,5 @@
-from pymongo import MongoClient
 from bson.json_util import ObjectId
+from pymongo import MongoClient
 
 
 class Database:
@@ -61,7 +61,8 @@ class Database:
                                 "input": "$sample_classes",
                                 "as": "sample_class",
                                 "cond": {
-                                    "$in": ["$$sample_class.class_id", [ObjectId(sample_class) for sample_class in sample_classes]]
+                                    "$in": ["$$sample_class.class_id",
+                                            [ObjectId(sample_class) for sample_class in sample_classes]]
                                 }
                             }
                         }
@@ -72,8 +73,12 @@ class Database:
                     {"$match": find_dict}
                 ])]
             return samples_list
-        except Exception as e:
+        except Exception:
             raise InterruptedError
+
+    def exists_sample(self, sample_name):
+        found = [sample for sample in self.db.samples.find({"name": {"$eq": sample_name}})]
+        return len(found) > 0
 
     def insert_class(self, class_name):
         try:

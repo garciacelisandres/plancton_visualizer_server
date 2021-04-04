@@ -14,7 +14,7 @@ from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-from database.database_api import Database
+from database import get_db
 
 from datetime import datetime
 
@@ -41,7 +41,7 @@ class ProductionDataset(Dataset):
         return tensor_image
 
 
-def get_sample_name_and_date(filename: str) -> (str, datetime):
+def build_sample(filename: str) -> (str, datetime):
     name = filename.split("/")[-1].replace(".zip", "")
     day_hour_list = name.split("_")[0]
     date_from_name = datetime.strptime(day_hour_list, "D%Y%m%dT%H%M%S")
@@ -82,7 +82,7 @@ def make_preds(model, loader, device):
     return y_pred, y_probs
 
 
-def predict(filename, db):
+def predict(filename):
     # Load the data
     trainpreds = np.genfromtxt('../results/trainpred.csv', delimiter=',')
     traintrue = np.genfromtxt('../results/traintrue.csv', delimiter=',')
@@ -133,6 +133,6 @@ def predict(filename, db):
     # print(df_dict)
     print("Time taken: %s seconds." % timetaken)
     sample_dict = pd.DataFrame({"CC": results_cc}, index=classes).to_dict()["CC"]
-    (name, date_retrieved) = get_sample_name_and_date(filename)
+    (name, date_retrieved) = build_sample(filename)
 
-    db.insert_sample(name, date_retrieved, sample_dict)
+    get_db().insert_sample(name, date_retrieved, sample_dict)
