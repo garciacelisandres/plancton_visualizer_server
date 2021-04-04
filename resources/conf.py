@@ -1,5 +1,8 @@
 from os import environ
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="../.env")
+
 
 class Config:
     DEBUG = False
@@ -21,6 +24,18 @@ class DevelopmentConfig(Config):
     }
 
 
+class TestingConfig(Config):
+    DEBUG = True
+    TESTING = True
+    APP_ENV = 'testing'
+    WTF_CSRF_ENABLED = False
+    MONGODB = {
+        "URL": environ.get("DATABASE_URL"),
+        "DATABASE": environ.get("TEST_DATABASE_NAME")
+    }
+
+
 config_by_name = dict(
-    dev=DevelopmentConfig
+    dev=DevelopmentConfig,
+    test=TestingConfig
 )

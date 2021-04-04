@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from bson.json_util import ObjectId
 
 
 class Database:
@@ -39,12 +40,10 @@ class Database:
                 classes_dict[class_name] = class_id
         return classes_dict
 
-    def get_samples(self, sample_classes, start_time, end_time):
+    def get_samples(self, sample_classes, start_time, end_time, quant_method):
         try:
             find_dict = {}
             dates_list = []
-            if start_time and end_time and start_time > end_time:
-                raise ValueError
             if not (start_time is None):
                 dates_list.append({"date_retrieved": {"$gte": start_time}})
             if not (end_time is None):
@@ -52,10 +51,28 @@ class Database:
             if len(dates_list) > 0:
                 find_dict["$and"] = dates_list
             if not (sample_classes is None or len(sample_classes) == 0):
-                find_dict["sample_classes"] = {"$in": sample_classes}
-            samples_list = [sample for sample in self.db.samples.find(find_dict)]
+                samples_list = [sample for sample in self.db.samples.aggregate([
+                    {"$match": find_dict},
+                    {"$project": {
+                        "name": 1,
+                        "date_retrieved": 1,
+                        "sample_classes": {
+                            "$filter": {
+                                "input": "$sample_classes",
+                                "as": "sample_class",
+                                "cond": {
+                                    "$in": ["$$sample_class.class_id", [ObjectId(sample_class) for sample_class in sample_classes]]
+                                }
+                            }
+                        }
+                    }}
+                ])]
+            else:
+                samples_list = [sample for sample in self.db.samples.aggregate([
+                    {"$match": find_dict}
+                ])]
             return samples_list
-        except Exception:
+        except Exception as e:
             raise InterruptedError
 
     def insert_class(self, class_name):
@@ -80,6 +97,14 @@ class Database:
             raise InterruptedError
 
 
-def init_db(url: str, db_name: str) -> Database:
+db = None
+
+
+def init_db(url: str, db_name: str):
+    global db
     db = Database(url, db_name)
+
+
+def get_db() -> Database or None:
+    global db
     return db

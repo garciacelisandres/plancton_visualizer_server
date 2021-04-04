@@ -1,19 +1,13 @@
 import datetime
 
-from flask import Flask, jsonify
-
-from database.database_api import Database
+from flask import jsonify
 
 from json import JSONEncoder
 from bson import ObjectId
 
 
-def get_db(app: Flask) -> Database:
-    return app.config["DB_CONNECTION"]
-
-
-def build_response(status, **kwargs):
-    response_dict = {"status": status}
+def build_response(code, **kwargs):
+    response_dict = {"code": code}
     for key, value in kwargs.items():
         response_dict[key] = value
     return jsonify(response_dict)
