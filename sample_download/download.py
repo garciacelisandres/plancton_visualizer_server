@@ -1,17 +1,16 @@
 from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
+from json import loads
 
 from database import get_db
 
 
-def download(url: str, save_path: str, link_element_id: str, last_downloaded_filename: str or None) -> (
+def download(url: str, save_path: str, last_downloaded_filename: str or None) -> (
         str or None, bool):
-    html = requests.get(url)
-    if check_html(html):
-        soup = BeautifulSoup(html.text, features="html.parser")
-        bin_header = soup.find("a", {"id": link_element_id}).contents[0]
+    res = requests.get(url)
+    if check_response(res):
+        bin_header = loads(res.text)["bin_id"]
         check_already_downloaded(bin_header, last_downloaded_filename)
         download_url = parse_url(url, bin_header)
         filename = download_zip(download_url, save_path)
@@ -20,11 +19,11 @@ def download(url: str, save_path: str, link_element_id: str, last_downloaded_fil
         return None, False
 
 
-def check_html(html):
-    content_type = html.headers['Content-Type']
-    if 'text/html' not in content_type:
+def check_response(res):
+    content_type = res.headers['Content-Type']
+    if 'application/json' not in content_type:
         return False  # no HTML file
-    if html.status_code != requests.codes.ok:
+    if res.status_code != requests.codes.ok:
         return False  # error while requesting the HTML page
     return True
 
