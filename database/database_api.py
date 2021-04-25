@@ -1,5 +1,6 @@
-from bson.json_util import ObjectId
 from pymongo import MongoClient
+
+from database.util import filter_samples_apply_filters
 
 
 class Database:
@@ -14,12 +15,13 @@ class Database:
         try:
             db_classes = self.get_classes()
             classes_dict = self._join_classes(db_classes, sample_dict)
+
             sample = {
                 "name": name,
                 "date_retrieved": date_retrieved,
                 "sample_classes": [{
                     "class_id": classes_dict[class_name],
-                    "value": sample_dict[class_name]
+                    "values": [{"method": method, "value": value} for method, value in sample_dict[class_name].items()]
                 } for class_name in sample_dict]
             }
             self.db.samples.insert_one(sample)
@@ -42,41 +44,19 @@ class Database:
 
     def get_samples(self, sample_classes, start_time, end_time, quant_method):
         try:
-            find_dict = {}
-            dates_list = []
-            if not (start_time is None):
-                dates_list.append({"date_retrieved": {"$gte": start_time}})
-            if not (end_time is None):
-                dates_list.append({"date_retrieved": {"$lte": end_time}})
-            if len(dates_list) > 0:
-                find_dict["$and"] = dates_list
-            if not (sample_classes is None or len(sample_classes) == 0):
-                samples_list = [sample for sample in self.db.samples.aggregate([
-                    {"$match": find_dict},
-                    {"$project": {
-                        "name": 1,
-                        "date_retrieved": 1,
-                        "sample_classes": {
-                            "$filter": {
-                                "input": "$sample_classes",
-                                "as": "sample_class",
-                                "cond": {
-                                    "$in": ["$$sample_class.class_id",
-                                            [ObjectId(sample_class) for sample_class in sample_classes]]
-                                }
-                            }
-                        }
-                    }}
-                ])]
-            else:
-                samples_list = [sample for sample in self.db.samples.aggregate([
-                    {"$match": find_dict}
-                ])]
+            filters = filter_samples_apply_filters(
+                sample_classes=sample_classes,
+                quant_method=quant_method,
+                start_time=start_time,
+                end_time=end_time
+            )
+            filtered = self.db.samples.aggregate(filters)
+            samples_list = [sample for sample in filtered]
             return samples_list
         except Exception:
             raise InterruptedError
 
-    def exists_sample(self, sample_name):
+    def find_sample_by_name(self, sample_name):
         found = [sample for sample in self.db.samples.find({"name": {"$eq": sample_name}})]
         return len(found) > 0
 
@@ -107,7 +87,8 @@ db = None
 
 def init_db(url: str, db_name: str):
     global db
-    db = Database(url, db_name)
+    if not db:
+        db = Database(url, db_name)
 
 
 def get_db() -> Database or None:

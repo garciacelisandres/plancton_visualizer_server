@@ -1,7 +1,7 @@
 # Check that we have everything here
 import os
 import sys
-import time
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -14,9 +14,7 @@ from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-from database import get_db
-
-from datetime import datetime
+from database.database_api import get_db, init_db
 
 if not os.path.isdir("../quantificationlib"):
     print("You should have the quantification library in this directory")
@@ -44,7 +42,10 @@ class ProductionDataset(Dataset):
 def build_sample(filename: str) -> (str, datetime):
     name = filename.split("/")[-1].replace(".zip", "")
     day_hour_list = name.split("_")[0]
-    date_from_name = datetime.strptime(day_hour_list, "D%Y%m%dT%H%M%S")
+    try:
+        date_from_name = datetime.strptime(day_hour_list, "D%Y%m%dT%H%M%S")
+    except ValueError:
+        date_from_name = datetime.now()
     return name, date_from_name
 
 
@@ -56,7 +57,7 @@ def load_network(device):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     # Define loss function
     loss_fn = nn.CrossEntropyLoss()
-    model.load_state_dict(torch.load("../model.pt", map_location=device), strict=False)
+    model.load_state_dict(torch.load("../model.pt"))
     model = model.to(device)  # Send model to gpu
     return model, loss_fn
 
@@ -91,14 +92,14 @@ def predict(filename):
 
     # Fit quantification models
     sys.path.insert(0, os.path.abspath("../quantificationlib"))
-    from quantificationlib import classify_and_count
+    from quantificationlib import classify_and_count, distribution_matching
 
     quantifier_cc = classify_and_count.CC(verbose=1)
-    # quantifierAC = classify_and_count.AC(verbose=1)
-    # quantifierHDy = distribution_matching.DFy(verbose=1)
+    quantifier_ac = classify_and_count.AC(verbose=1)
+    quantifier_hdy = distribution_matching.DFy(verbose=1)
     quantifier_cc.fit(None, traintrue, predictions_train=trainpreds)
-    # quantifierAC.fit(None, traintrue, predictions_train=trainprobs)
-    # quantifierHDy.fit(None, traintrue, predictions_train=trainprobs)
+    quantifier_ac.fit(None, traintrue, predictions_train=trainprobs)
+    quantifier_hdy.fit(None, traintrue, predictions_train=trainprobs)
 
     prod_transform = T.Compose([
         T.Resize(size=256),
@@ -119,20 +120,18 @@ def predict(filename):
     print("Using %s" % device)
 
     model, _ = load_network(device)
-    starttime = time.perf_counter()
     y_pred, y_probs = make_preds(model, prod_loader, device)
-    timetaken = time.perf_counter() - starttime
     y_pred = np.vstack(y_pred)
     y_probs = np.vstack(y_probs)
 
     results_cc = quantifier_cc.predict(None, predictions_test=y_pred)
-    # resultsAC = quantifierAC.predict(None, predictions_test=y_pred)
-    # resultsHDy = quantifierHDy.predict(None, predictions_test=y_probs)
+    results_ac = quantifier_ac.predict(None, predictions_test=y_pred)
+    results_hdy = quantifier_hdy.predict(None, predictions_test=y_probs)
 
-    # df_dict = pd.DataFrame({'CC': resultsCC, 'AC': resultsAC, 'HDy': resultsHDy}, index=classes)
-    # print(df_dict)
-    print("Time taken: %s seconds." % timetaken)
-    sample_dict = pd.DataFrame({"CC": results_cc}, index=classes).to_dict()["CC"]
+    sample_dict = pd.DataFrame({"CC": results_cc, "AC": results_ac, "HDy": results_hdy}, index=classes)\
+        .to_dict("index")
     (name, date_retrieved) = build_sample(filename)
 
+    if not get_db():
+        init_db("mongodb://localhost:27017", "plancton")
     get_db().insert_sample(name, date_retrieved, sample_dict)

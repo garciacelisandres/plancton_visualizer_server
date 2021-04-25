@@ -19,7 +19,6 @@ class BackgroundJob:
             (filename, content_downloaded) = download(
                 environ.get("DOWNLOAD_URL"),
                 environ.get("DOWNLOAD_SAVE_PATH"),
-                environ.get("DOWNLOAD_LINK_ELEMENT_ID"),
                 self.last_downloaded_filename
             )
             if content_downloaded:

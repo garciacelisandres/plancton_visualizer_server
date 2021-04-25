@@ -32,7 +32,7 @@ def check_already_downloaded(to_download_filename, last_downloaded_filename):
     if last_downloaded_filename:
         if to_download_filename == last_downloaded_filename:
             return True
-    return get_db().exists_sample(to_download_filename)
+    return get_db().find_sample_by_name(to_download_filename)
 
 
 def parse_url(url, link):

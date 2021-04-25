@@ -12,6 +12,8 @@ def get_samples(sample_classes: str, start_time: str, end_time: str, quant_metho
         raise ValueError
     if sample_classes:
         sample_classes = sample_classes.split(",")
+    if quant_method:
+        quant_method = quant_method.split(",")
     try:
         sample_list = get_db_check_initialized().get_samples(sample_classes, start_time, end_time, quant_method)
     except InterruptedError:
