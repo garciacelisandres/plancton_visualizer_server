@@ -132,6 +132,4 @@ def predict(filename):
         .to_dict("index")
     (name, date_retrieved) = build_sample(filename)
 
-    if not get_db():
-        init_db("mongodb://localhost:27017", "plancton")
     get_db().insert_sample(name, date_retrieved, sample_dict)

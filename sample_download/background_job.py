@@ -3,12 +3,22 @@ import time
 from os import environ
 
 from sample_download import download, load, predict
+from database.database_api import init_db
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class BackgroundJob:
     def __init__(self, interval: int):
         self.interval = interval
         self.last_downloaded_filename = None
+
+        # Initialize the database
+        init_db(
+            environ.get("DATABASE_URL"),
+            environ.get("DATABASE_NAME")
+        )
 
         self.thread = threading.Thread(target=self.run, args=())
         self.thread.daemon = True
