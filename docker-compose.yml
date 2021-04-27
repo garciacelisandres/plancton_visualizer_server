@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  database:
+    image: mongo
+    container_name: database
+    env_file: ./.env
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    volumes:
+      - ${ROOT_DIR}:/path/to/volumes
+
+  download:
+    image: sample_download
+    init: true
+    build:
+      context: ./
+      dockerfile: sample_download.Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ gpu ]
+    depends_on:
+      - database
+    env_file: ./.env
+    ports:
+      - ${SAMPLE_DOWNLOAD_PORT}:${SAMPLE_DOWNLOAD_PORT}
+    command:
+      [
+          "python",
+          "./sample_download/background_job.py"
+      ]
