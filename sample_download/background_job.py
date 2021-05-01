@@ -10,7 +10,7 @@ load_dotenv()
 
 
 class BackgroundJob:
-    def __init__(self, interval: int):
+    def __init__(self, interval: int, daemon: bool):
         self.interval = interval
         self.last_downloaded_filename = None
 
@@ -20,9 +20,12 @@ class BackgroundJob:
             environ.get("DATABASE_NAME")
         )
 
-        self.thread = threading.Thread(target=self.run, args=())
-        self.thread.daemon = True
-        self.thread.start()
+        if daemon:
+            self.thread = threading.Thread(target=self.run, args=())
+            self.thread.daemon = True
+            self.thread.start()
+        else:
+            self.run()
 
     def run(self):
         while True:
@@ -38,3 +41,7 @@ class BackgroundJob:
                 self.last_downloaded_filename = downloaded_filename
 
             time.sleep(self.interval)
+
+
+if __name__ == "__main__":
+    BackgroundJob(1200, False)

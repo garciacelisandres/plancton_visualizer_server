@@ -7,10 +7,10 @@ services:
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
-      - ${ROOT_DIR}:/path/to/volumes
+      - ${ROOT_DIR}:/data/db
 
   download:
-    image: sample_download
+    image: download
     init: true
     build:
       context: ./
@@ -23,10 +23,13 @@ services:
     depends_on:
       - database
     env_file: ./.env
+    environment:
+      - PYTHONPATH=/code
+    ipc: host
     ports:
       - ${SAMPLE_DOWNLOAD_PORT}:${SAMPLE_DOWNLOAD_PORT}
     command:
       [
-          "python",
+          "python3",
           "./sample_download/background_job.py"
       ]

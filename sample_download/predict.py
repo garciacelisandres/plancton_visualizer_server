@@ -113,6 +113,10 @@ def predict(filename):
     prod_loader = DataLoader(prod_dset, batch_size=256, num_workers=4)
     print("Loaded %d images " % len(prod_dset))
 
+    if not len(prod_dset) > 1:
+        print("Skipping the prediction operation: too few images downloaded.")
+        return
+
     # Classify the sample and then quantify it
     pd.set_option('display.float_format', lambda x: '%.5f' % x)
 

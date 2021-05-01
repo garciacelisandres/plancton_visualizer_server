@@ -8,7 +8,11 @@ from database import get_db
 
 def download(url: str, save_path: str, last_downloaded_filename: str or None) -> (
         str or None, bool):
-    res = requests.get(url)
+    try:
+        res = requests.get(url)
+    except Exception as err:
+        print(err)
+        return None, False
     if check_response(res):
         bin_header = loads(res.text)["bin_id"]
         check_already_downloaded(bin_header, last_downloaded_filename)
@@ -22,9 +26,9 @@ def download(url: str, save_path: str, last_downloaded_filename: str or None) ->
 def check_response(res):
     content_type = res.headers['Content-Type']
     if 'application/json' not in content_type:
-        return False  # no HTML file
+        return False  # no JSON file
     if res.status_code != requests.codes.ok:
-        return False  # error while requesting the HTML page
+        return False  # error while requesting the JSON
     return True
 
 
