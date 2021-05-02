@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 
+from database.errorhandlers import errorlogger, connectionlosthandler
 from database.util import filter_samples_apply_filters
 
 
@@ -11,24 +12,23 @@ class Database:
     def __del__(self):
         self.conn.close()
 
+    @errorlogger
+    @connectionlosthandler
     def insert_sample(self, name, date_retrieved, sample_dict):
-        try:
-            db_classes = self.get_classes()
-            classes_dict = self._join_classes(db_classes, sample_dict)
+        db_classes = self.get_classes()
+        classes_dict = self._join_classes(db_classes, sample_dict)
 
-            sample = {
-                "name": name,
-                "date_retrieved": date_retrieved,
-                "sample_classes": [{
-                    "class_id": classes_dict[class_name],
-                    "values": [{"method": method, "value": value} for method, value in sample_dict[class_name].items()]
-                } for class_name in sample_dict]
-            }
-            self.db.samples.insert_one(sample)
-        except Exception as e:
-            print("Error while inserting sample.")
-            print(e)
+        sample = {
+            "name": name,
+            "date_retrieved": date_retrieved,
+            "sample_classes": [{
+                "class_id": classes_dict[class_name],
+                "values": [{"method": method, "value": value} for method, value in sample_dict[class_name].items()]
+            } for class_name in sample_dict]
+        }
+        self.db.samples.insert_one(sample)
 
+    @errorlogger
     def _join_classes(self, db_classes: list, sample_dict):
         classes_dict = {}
         db_class_names = [class_item["name"] for class_item in db_classes]
@@ -42,44 +42,42 @@ class Database:
                 classes_dict[class_name] = class_id
         return classes_dict
 
+    @errorlogger
+    @connectionlosthandler
     def get_samples(self, sample_classes, start_time, end_time, quant_method):
-        try:
-            filters = filter_samples_apply_filters(
-                sample_classes=sample_classes,
-                quant_method=quant_method,
-                start_time=start_time,
-                end_time=end_time
-            )
-            filtered = self.db.samples.aggregate(filters)
-            samples_list = [sample for sample in filtered]
-            return samples_list
-        except Exception:
-            raise InterruptedError
+        filters = filter_samples_apply_filters(
+            sample_classes=sample_classes,
+            quant_method=quant_method,
+            start_time=start_time,
+            end_time=end_time
+        )
+        filtered = self.db.samples.aggregate(filters)
+        samples_list = [sample for sample in filtered]
+        return samples_list
 
-    def find_sample_by_name(self, sample_name):
+    @errorlogger
+    @connectionlosthandler
+    def get_sample_by_name(self, sample_name):
         found = [sample for sample in self.db.samples.find({"name": {"$eq": sample_name}})]
         return len(found) > 0
 
+    @errorlogger
+    @connectionlosthandler
     def insert_class(self, class_name):
-        try:
-            inserted = self.db.classes.insert_one({"name": class_name})
-            return inserted.inserted_id
-        except Exception:
-            raise InterruptedError
+        inserted = self.db.classes.insert_one({"name": class_name})
+        return inserted.inserted_id
 
+    @errorlogger
+    @connectionlosthandler
     def get_classes(self):
-        try:
-            class_list = [class_obj for class_obj in self.db.classes.find({})]
-            return class_list
-        except Exception:
-            raise InterruptedError
+        class_list = [class_obj for class_obj in self.db.classes.find({})]
+        return class_list
 
+    @errorlogger
+    @connectionlosthandler
     def get_class(self, class_id):
-        try:
-            class_obj = self.db.classes.find_one({"_id": class_id})
-            return class_obj
-        except Exception:
-            raise InterruptedError
+        class_obj = self.db.classes.find_one({"_id": class_id})
+        return class_obj
 
 
 db = None

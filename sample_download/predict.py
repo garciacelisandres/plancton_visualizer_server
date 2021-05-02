@@ -15,6 +15,7 @@ from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
 from database.database_api import get_db, init_db
+from sample_download.errorhandlers import checkdatabaseavailable
 
 if not os.path.isdir("../quantificationlib"):
     print("You should have the quantification library in this directory")
@@ -83,6 +84,7 @@ def make_preds(model, loader, device):
     return y_pred, y_probs
 
 
+@checkdatabaseavailable
 def predict(filename):
     # Load the data
     trainpreds = np.genfromtxt('../results/trainpred.csv', delimiter=',')

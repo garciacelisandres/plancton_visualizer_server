@@ -4,6 +4,7 @@ import requests
 from json import loads
 
 from database import get_db
+from sample_download.errorhandlers import checkdatabaseavailable
 
 
 def download(url: str, save_path: str, last_downloaded_filename: str or None) -> (
@@ -32,11 +33,12 @@ def check_response(res):
     return True
 
 
+@checkdatabaseavailable
 def check_already_downloaded(to_download_filename, last_downloaded_filename):
     if last_downloaded_filename:
         if to_download_filename == last_downloaded_filename:
             return True
-    return get_db().find_sample_by_name(to_download_filename)
+    return get_db().get_sample_by_name(to_download_filename)
 
 
 def parse_url(url, link):
