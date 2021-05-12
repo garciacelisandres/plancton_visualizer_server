@@ -10,11 +10,3 @@ def errorlogger(func, log_level="error"):
             # TODO: Log error here!
             raise e
     return wrapper_errorlogger
-
-
-class InvalidDateRangeError(Exception):
-    pass
-
-
-class DatabaseConnectionError(Exception):
-    pass

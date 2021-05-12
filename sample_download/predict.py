@@ -2,6 +2,7 @@
 import os
 import sys
 from datetime import datetime
+import uuid
 
 import numpy as np
 import pandas as pd
@@ -14,7 +15,7 @@ from PIL import Image
 from natsort import natsorted
 from torch.utils.data import Dataset, DataLoader
 
-from database.database_api import get_db, init_db
+from database.database_api import get_db
 from sample_download.errorhandlers import checkdatabaseavailable
 
 if not os.path.isdir("../quantificationlib"):
@@ -42,6 +43,8 @@ class ProductionDataset(Dataset):
 
 def build_sample(filename: str) -> (str, datetime):
     name = filename.split("/")[-1].replace(".zip", "")
+    if len(name.strip()) == 0:
+        name = str(uuid.uuid4())
     day_hour_list = name.split("_")[0]
     try:
         date_from_name = datetime.strptime(day_hour_list, "D%Y%m%dT%H%M%S")

@@ -1,13 +1,15 @@
 from pymongo import MongoClient
 
 from database.errorhandlers import errorlogger, connectionlosthandler
-from database.util import filter_samples_apply_filters
+from database.util import filter_samples_apply_filters, limit_sample_list
 
 
 class Database:
     def __init__(self, url, db_name):
         self.conn = MongoClient(url)
         self.db = self.conn.get_database(db_name)
+
+        self.default_samples_limit = 150
 
     def __del__(self):
         self.conn.close()
@@ -53,6 +55,9 @@ class Database:
         )
         filtered = self.db.samples.aggregate(filters)
         samples_list = [sample for sample in filtered]
+        print("Length before limiting: %i" % len(samples_list))
+        samples_list = limit_sample_list(samples_list, self.default_samples_limit)
+        print("Length after limiting: %i" % len(samples_list))
         return samples_list
 
     @errorlogger

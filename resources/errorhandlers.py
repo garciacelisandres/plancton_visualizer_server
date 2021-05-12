@@ -1,7 +1,10 @@
 from flask import Blueprint
+from werkzeug.exceptions import abort
 
 from resources.util import build_response
+import functools
 
+from util.customerrors import InvalidDateRangeError, DatabaseConnectionError
 
 api_errors = Blueprint("api_errors", __name__)
 
@@ -27,3 +30,17 @@ def internal_error_handler(error):
         500,
         code=error.description if len(error.description) > 0 else "Internal server error."
     ), 500
+
+
+def apierrorhandler(func):
+    @functools.wraps(func)
+    def wrapper_apierrorhandler(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except InvalidDateRangeError:
+            abort(400, "Bad request. \"start_time\" cannot be greater than \"end_time\".")
+        except DatabaseConnectionError:
+            abort(500, "A connection error occurred. If this keeps happening, contact the administrator of the system.")
+        except Exception:
+            abort(500, "An unexpected error occurred. If this keeps happening, contact the administrator of the system.")
+    return wrapper_apierrorhandler

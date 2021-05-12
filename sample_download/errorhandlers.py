@@ -11,6 +11,6 @@ def checkdatabaseavailable(func, log_level="error"):
             # TODO: Log error here!
             print(f"A connection could not be made with the database. "
                   f"Skipping execution of {func.__name__!r} function.")
-            return
+            return False
         return func(*args, **kwargs)
     return wrapper_checkdatabaseavailable

@@ -9,7 +9,7 @@ def filter_samples_apply_filters(**kwargs) -> list:
     filter_list.append(filter_samples_sample_classes(sample_classes=kwargs["sample_classes"]))
     # Filter quantification methods
     filter_list.extend(filter_samples_quant_method(quant_method=kwargs["quant_method"]))
-    return list(filter(lambda d: len(d) > 0, filter_list))
+    return list(filter(lambda d: len(d) > 0, filter_list))  # filter out empty dicts and return
 
 
 def filter_samples_dates(start_time, end_time) -> dict:
@@ -84,3 +84,13 @@ def filter_samples_quant_method(quant_method) -> list:
             }]
     else:
         return []
+
+
+def limit_sample_list(sample_list: list, limit: int) -> list:
+    if len(sample_list) > limit:
+        ratio = len(sample_list) / float(limit)
+        new_sample_list = []
+        for i in range(0, limit - 1):
+            new_sample_list.append(sample_list[round(i * ratio)])
+        return new_sample_list
+    return sample_list

@@ -16,12 +16,12 @@ def download(url: str, save_path: str, last_downloaded_filename: str or None) ->
         return None, False
     if check_response(res):
         bin_header = loads(res.text)["bin_id"]
-        check_already_downloaded(bin_header, last_downloaded_filename)
-        download_url = parse_url(url, bin_header)
-        filename = download_zip(download_url, save_path)
-        return filename, True
-    else:
-        return None, False
+        checked = check_already_downloaded(bin_header, last_downloaded_filename)
+        if not checked:
+            download_url = parse_url(url, bin_header)
+            filename = download_zip(download_url, save_path)
+            return filename, True
+    return None, False
 
 
 def check_response(res):
