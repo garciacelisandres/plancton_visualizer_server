@@ -2,6 +2,8 @@ import threading
 import time
 from os import environ
 
+import logging
+
 from sample_download import download, load, predict
 from database.database_api import init_db
 
@@ -44,4 +46,6 @@ class BackgroundJob:
 
 
 if __name__ == "__main__":
+    # Configure the logging for the sample download module (SD)
+    logging.basicConfig(format="[%(asctime)s] SD - %(levelname)s: %(message)s", filename="../logs.txt", level=logging.INFO)
     BackgroundJob(1200, False)

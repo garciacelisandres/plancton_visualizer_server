@@ -1,15 +1,18 @@
-from pymongo.errors import ConnectionFailure
 import functools
+import logging
+
+from pymongo.errors import ConnectionFailure
 
 
-def errorlogger(func, log_level="error"):
+def errorlogger(func):
     @functools.wraps(func)
     def wrapper_errorlogger(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            # TODO: Log error here!
-            raise e
+            logging.error("The following error occurred: %s" % e)
+            # raise e
+
     return wrapper_errorlogger
 
 
@@ -18,7 +21,7 @@ def connectionlosthandler(func):
     def wrapper_connectionlosthandler(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except ConnectionFailure:
-            # TODO: Log error here!
-            pass
+        except ConnectionFailure as e:
+            logging.error("Connection with the database is nonexistent. %s" % e)
+
     return wrapper_connectionlosthandler

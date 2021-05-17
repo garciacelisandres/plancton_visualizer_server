@@ -1,9 +1,9 @@
+import functools
+
 from flask import Blueprint
 from werkzeug.exceptions import abort
 
 from resources.util import build_response
-import functools
-
 from util.customerrors import InvalidDateRangeError, DatabaseConnectionError
 
 api_errors = Blueprint("api_errors", __name__)
@@ -42,5 +42,7 @@ def apierrorhandler(func):
         except DatabaseConnectionError:
             abort(500, "A connection error occurred. If this keeps happening, contact the administrator of the system.")
         except Exception:
-            abort(500, "An unexpected error occurred. If this keeps happening, contact the administrator of the system.")
+            abort(500,
+                  "An unexpected error occurred. If this keeps happening, contact the administrator of the system.")
+
     return wrapper_apierrorhandler
