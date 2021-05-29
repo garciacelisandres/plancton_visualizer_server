@@ -34,6 +34,11 @@ def create_app(config_name: str) -> Flask:
     app.register_error_handler(404, _handle_api_error_404)
 
     # Configure the logging for the API
-    logging.basicConfig(format="[%(asctime)s] API - %(levelname)s: %(message)s", filename="../logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        format="[%(asctime)s] API - %(levelname)s: %(message)s",
+        filemode="a",
+        filename="./api.log",
+        level=logging.INFO
+    )
 
     return app

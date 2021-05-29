@@ -47,5 +47,10 @@ class BackgroundJob:
 
 if __name__ == "__main__":
     # Configure the logging for the sample download module (SD)
-    logging.basicConfig(format="[%(asctime)s] SD - %(levelname)s: %(message)s", filename="../logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        format="[%(asctime)s] SD - %(levelname)s: %(message)s",
+        filemode="a",
+        filename="../download.log",
+        level=logging.INFO
+    )
     BackgroundJob(1200, False)
