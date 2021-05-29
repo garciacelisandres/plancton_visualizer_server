@@ -2,8 +2,6 @@ FROM python:3.8
 WORKDIR /code
 
 RUN apt update && apt install -y --no-install-recommends
-RUN python3 -m venv myenv
-RUN . myenv/bin/activate
 RUN pip3 -q install pip --upgrade
 
 COPY . .
