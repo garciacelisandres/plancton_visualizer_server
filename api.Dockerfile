@@ -6,5 +6,6 @@ RUN pip3 -q install pip --upgrade
 
 COPY . .
 RUN pip install -r /code/requirements.txt
+RUN pip install pymongo[srv]
 RUN pip install gunicorn
 CMD gunicorn -w 2 -b 127.0.0.1:51000 --pythonpath /code wsgi:app
