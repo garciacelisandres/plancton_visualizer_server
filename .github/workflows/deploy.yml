@@ -46,6 +46,9 @@ jobs:
           echo Stopping old image...
           sudo docker container stop plancton_visualizer_server_container
           echo Done.
+          echo Deleting untagged images...
+          sudo docker rmi -f $(sudo docker images | grep none | tr -s ' ' | cut -d ' ' -f 3)
+          echo Done.
           echo Running new container...
           sudo docker run -d --rm -p 51000:51000 --name plancton_visualizer_server_container docker.pkg.github.com/garciacelisandres/plancton_visualizer_server/plancton_visualizer_server:latest
           echo Done
