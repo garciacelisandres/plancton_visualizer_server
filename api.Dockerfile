@@ -5,6 +5,6 @@ RUN apt update && apt install -y --no-install-recommends
 RUN pip3 -q install pip --upgrade
 
 COPY . .
-RUN pip3 install -r /code/requirements.txt
-RUN pip3 install gunicorn
+RUN pip install -r /code/requirements.txt
+RUN pip install gunicorn
 CMD gunicorn -w 2 -b 127.0.0.1:51000 --pythonpath /code wsgi:app
