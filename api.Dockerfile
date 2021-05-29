@@ -9,6 +9,4 @@ RUN pip3 -q install pip --upgrade
 COPY . .
 RUN pip3 install -r /code/requirements.txt
 RUN apt-get -y install gunicorn3
-RUN apt-get -y update
-RUN apt-get -y -t buster-backports install gunicorn
 CMD ["gunicorn -w 2 -b 127.0.0.1:51000 wsgi:app"]
