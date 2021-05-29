@@ -12,4 +12,4 @@ RUN . myenv/bin/activate
 RUN pip3 -q install pip --upgrade
 RUN pip3 install -r /code/requirements.txt
 RUN pip3 install gunicorn
-CMD ["gunicorn -w 2 -b 127.0.0.1 wsgi:app"]
+CMD ["gunicorn -w 2 -b 127.0.0.1:51000 wsgi:app"]
