@@ -27,9 +27,13 @@ def create_app(config_name: str) -> Flask:
     csp = {
         "default-src": "\'self\'",
         "object-src": "\'none\'",
-        "require-trusted-types-for": "\'script\'"
+        "require-trusted-types-for": "\'script\'",
+        "upgrade-insecure-requests": None,
+        "block-all-mixed-content": ""
     }
-    Talisman(app, content_security_policy=csp)  # adds CSP and another security preventions
+    Talisman(app,
+             content_security_policy=csp,
+             strict_transport_security=False)  # adds CSP and another security preventions
     SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
