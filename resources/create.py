@@ -25,8 +25,15 @@ def create_app(config_name: str) -> Flask:
     # Add CORS and security middlewares
     CORS(app)
     csp = {
+        "report-uri": "\'none\'",
         "default-src": "\'self\'",
+        "script-src": "\'none\'",
+        "style-src": "\'none\'",
+        "worker-src": "\'none\'",
         "object-src": "\'none\'",
+        "base-uri": "\'self\'",
+        "frame-ancestors": "\'none\'",
+        "form-action": "\'none\'",
         "require-trusted-types-for": "\'script\'",
     }
     Talisman(app,
