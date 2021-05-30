@@ -2,6 +2,8 @@ import logging
 
 from flask import Flask, request
 from flask_cors import CORS
+from flask_talisman import Talisman
+from flask_seasurf import SeaSurf
 
 from database.database_api import init_db
 from resources.conf import config_by_name
@@ -19,9 +21,11 @@ def _handle_api_error_404(error):
 
 def create_app(config_name: str) -> Flask:
     # Initialize resources
-    app = Flask("plancton_visualizer_server")
-    # Add CORS
+    app = Flask(__name__)
+    # Add CORS and other security middlewares
     CORS(app)
+    Talisman(app)  # adds secure headers and prevents several vulnerabilities
+    SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
     init_db(app.config["MONGODB"]["URL"], app.config["MONGODB"]["DATABASE"])
