@@ -22,9 +22,14 @@ def _handle_api_error_404(error):
 def create_app(config_name: str) -> Flask:
     # Initialize resources
     app = Flask(__name__)
-    # Add CORS and other security middlewares
+    # Add CORS and security middlewares
     CORS(app)
-    Talisman(app)  # adds secure headers and prevents several vulnerabilities
+    csp = {
+        "default-src": "\'self\'",
+        "object-src": "\'none\'",
+        "require-trusted-types-for": "\'script\'"
+    }
+    Talisman(app, content_security_policy=csp)  # adds CSP and another security preventions
     SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
