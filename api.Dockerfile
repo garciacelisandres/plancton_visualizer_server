@@ -9,12 +9,4 @@ RUN pip install -r /code/requirements.txt
 RUN pip install pymongo[srv]
 RUN pip install gunicorn
 
-# SSL certificates
-ARG CERTFILE
-ARG KEYFILE
-ENV CERTFILE=$CERTFILE
-ENV KEYFILE=$KEYFILE
-COPY CERTFILE ./certfile.pem
-COPY KEYFILE ./keyfile.pem
-
-CMD gunicorn -w 2 -b 0.0.0.0:51000 --pythonpath /code --certfile=certfile.pem --keyfile=keyfile.pem wsgi:app
+CMD gunicorn -w 2 -b 0.0.0.0:51000 --pythonpath /code --certfile=fullchain.pem --keyfile=priv.pem wsgi:app

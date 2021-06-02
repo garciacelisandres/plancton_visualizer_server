@@ -25,7 +25,6 @@ jobs:
           dockerfile: api.Dockerfile
           registry: docker.pkg.github.com
           repository: garciacelisandres/plancton_visualizer_server/plancton_visualizer_server
-          build_args: CERTFILE=${{ secrets.CERTFILE }},KEYFILE=${{ secrets.KEYFILE }}
           tag_with_ref: true
           tags: latest
   docker-deploy:
