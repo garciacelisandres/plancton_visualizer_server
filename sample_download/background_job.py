@@ -8,6 +8,7 @@ from sample_download import download, load, predict
 from database.database_api import init_db
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -33,11 +34,11 @@ class BackgroundJob:
         while True:
             (filename, content_downloaded) = download(
                 environ.get("DOWNLOAD_URL"),
-                environ.get("DOWNLOAD_SAVE_PATH"),
+                f'{environ.get("CONTEXT")}{environ.get("DOWNLOAD_SAVE_PATH")}',
                 self.last_downloaded_filename
             )
             if content_downloaded:
-                load(filename, environ.get("LOAD_DESTINATION_DIR"))
+                load(filename, f'{environ.get("CONTEXT")}{environ.get("LOAD_DESTINATION_DIR")}')
                 downloaded_filename = filename.split(".")[0]
                 predict(downloaded_filename)
                 self.last_downloaded_filename = downloaded_filename
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     logging.basicConfig(
         format="[%(asctime)s] SD - %(levelname)s: %(message)s",
         filemode="a",
-        filename="../download.log",
+        filename=f"{environ.get('CONTEXT')}download.log",
         level=logging.INFO
     )
     BackgroundJob(1200, False)

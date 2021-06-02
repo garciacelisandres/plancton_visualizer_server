@@ -1,4 +1,5 @@
 import logging
+from os import environ
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -24,21 +25,20 @@ def create_app(config_name: str) -> Flask:
     app = Flask(__name__)
     # Add CORS and security middlewares
     CORS(app)
-    csp = {
-        "report-uri": "\'none\'",
-        "default-src": "\'self\'",
-        "script-src": "\'none\'",
-        "style-src": "\'none\'",
-        "worker-src": "\'none\'",
-        "object-src": "\'none\'",
-        "base-uri": "\'self\'",
-        "frame-ancestors": "\'none\'",
-        "form-action": "\'none\'",
-        "require-trusted-types-for": "\'script\'",
-    }
-    Talisman(app,
-             content_security_policy=csp,
-             strict_transport_security=True)  # adds CSP and another security preventions
+    if config_name == "prod":
+        csp = {
+            "report-uri": "\'none\'",
+            "default-src": "\'self\'",
+            "script-src": "\'none\'",
+            "style-src": "\'none\'",
+            "worker-src": "\'none\'",
+            "object-src": "\'none\'",
+            "base-uri": "\'self\'",
+            "frame-ancestors": "\'none\'",
+            "form-action": "\'none\'",
+            "require-trusted-types-for": "\'script\'",
+        }
+        Talisman(app, content_security_policy=csp)  # adds CSP and another security preventions
     # SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
@@ -55,7 +55,7 @@ def create_app(config_name: str) -> Flask:
     logging.basicConfig(
         format="[%(asctime)s] API - %(levelname)s: %(message)s",
         filemode="a",
-        filename="./api.log",
+        filename=f"{environ.get('CONTEXT')}api.log",
         level=logging.INFO
     )
 

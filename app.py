@@ -1,3 +1,7 @@
 from resources.create import create_app
+from os import environ
 
-app = create_app("prod")
+from dotenv import load_dotenv
+load_dotenv()
+
+app = create_app(environ.get('ENVIRONMENT'))
