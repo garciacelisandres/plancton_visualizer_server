@@ -143,3 +143,4 @@ def predict(filename):
     (name, date_retrieved) = build_sample(filename)
 
     get_db().insert_sample(name, date_retrieved, sample_dict)
+    # torch.cuda.empty_cache()  # Free GPU memory by emptying the cache. Only use if necessary.
