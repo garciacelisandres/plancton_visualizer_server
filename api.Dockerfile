@@ -12,6 +12,8 @@ RUN pip install gunicorn
 # SSL certificates
 ARG CERTFILE
 ARG KEYFILE
+ENV CERTFILE=$CERTFILE
+ENV KEYFILE=$KEYFILE
 COPY CERTFILE ./certfile.pem
 COPY KEYFILE ./keyfile.pem
 
