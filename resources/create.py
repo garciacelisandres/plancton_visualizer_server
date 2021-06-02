@@ -38,8 +38,8 @@ def create_app(config_name: str) -> Flask:
     }
     Talisman(app,
              content_security_policy=csp,
-             strict_transport_security=False,
-             force_https=False)  # adds CSP and another security preventions
+             strict_transport_security=True,
+             force_https_permanent=True)  # adds CSP and another security preventions
     # SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
