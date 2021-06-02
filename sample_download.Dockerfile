@@ -16,4 +16,6 @@ COPY results /code/results
 COPY sample_download /code/sample_download
 COPY model.pt /code/model.pt
 COPY .env /code/.env
-RUN pip3 install -r /code/sample_download/requirements.txt
+RUN pip install -r /code/quantificationlib/requirements.txt
+RUN pip install -r /code/sample_download/requirements.txt
+RUN pip install pymongo[srv]
