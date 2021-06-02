@@ -62,7 +62,7 @@ def load_network(device):
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     # Define loss function
     loss_fn = nn.CrossEntropyLoss()
-    model.load_state_dict(torch.load(f'{environ.get("ENVIRONMENT")}model.pt'))
+    model.load_state_dict(torch.load(f'{environ.get("CONTEXT")}model.pt'))
     model = model.to(device)  # Send model to gpu
     return model, loss_fn
 
@@ -91,13 +91,13 @@ def make_preds(model, loader, device):
 @checkdatabaseavailable
 def predict(filename):
     # Load the data
-    trainpreds = np.genfromtxt(f'{environ.get("ENVIRONMENT")}results/trainpred.csv', delimiter=',')
-    traintrue = np.genfromtxt(f'{environ.get("ENVIRONMENT")}results/traintrue.csv', delimiter=',')
-    trainprobs = np.genfromtxt(f'{environ.get("ENVIRONMENT")}results/trainprobs.csv', delimiter=',')
-    classes = np.genfromtxt(f'{environ.get("ENVIRONMENT")}results/classes.csv', dtype='str')
+    trainpreds = np.genfromtxt(f'{environ.get("CONTEXT")}results/trainpred.csv', delimiter=',')
+    traintrue = np.genfromtxt(f'{environ.get("CONTEXT")}results/traintrue.csv', delimiter=',')
+    trainprobs = np.genfromtxt(f'{environ.get("CONTEXT")}results/trainprobs.csv', delimiter=',')
+    classes = np.genfromtxt(f'{environ.get("CONTEXT")}results/classes.csv', dtype='str')
 
     # Fit quantification models
-    sys.path.insert(0, os.path.abspath(f'{environ.get("ENVIRONMENT")}quantificationlib'))
+    sys.path.insert(0, os.path.abspath(f'{environ.get("CONTEXT")}quantificationlib'))
     from quantificationlib import classify_and_count, distribution_matching
 
     quantifier_cc = classify_and_count.CC(verbose=1)
@@ -115,7 +115,7 @@ def predict(filename):
     ])
 
     # This directory should be the directory with the new images... using validation for simplicity here
-    prod_dset = ProductionDataset(f'{environ.get("ENVIRONMENT")}production', transform=prod_transform)
+    prod_dset = ProductionDataset(f'{environ.get("CONTEXT")}production', transform=prod_transform)
     prod_loader = DataLoader(prod_dset, batch_size=256, num_workers=4)
     print("Loaded %d images " % len(prod_dset))
 
