@@ -19,7 +19,7 @@ from torch.utils.data import Dataset, DataLoader
 from database.database_api import get_db
 from sample_download.errorhandlers import checkdatabaseavailable
 
-if not os.path.isdir(f'{environ.get("ENVIRONMENT")}quantificationlib'):
+if not os.path.isdir(f'{environ.get("CONTEXT")}quantificationlib'):
     print("You should have the quantification library in this directory")
     sys.exit()
 
