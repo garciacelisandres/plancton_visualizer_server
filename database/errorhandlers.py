@@ -22,6 +22,6 @@ def connectionlosthandler(func):
         try:
             return func(*args, **kwargs)
         except ConnectionFailure as e:
-            logging.error("Connection with the database is nonexistent. %s" % e)
+            logging.error("Connection with the database is nonexistent. Error details: %s" % e)
 
     return wrapper_connectionlosthandler

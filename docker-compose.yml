@@ -7,7 +7,7 @@ services:
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
     volumes:
-      - ${ROOT_DIR}:/data/db
+      - ${DATABASE_VOLUMES_ROOT_DIR}:/data/db
 
   download:
     image: download

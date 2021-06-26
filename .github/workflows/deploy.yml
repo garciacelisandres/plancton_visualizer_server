@@ -1,0 +1,58 @@
+name: CI Plankton Server
+
+on:
+  push:
+    branches: [main]
+jobs:
+  unitary-test-restapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Unit tests
+        run: echo The tests will be here.
+  docker-push:
+    name: Push Docker Image to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: [unitary-test-restapi]
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          dockerfile: api.Dockerfile
+          registry: docker.pkg.github.com
+          repository: garciacelisandres/plancton_visualizer_server/plancton_visualizer_server
+          tag_with_ref: true
+          tags: latest
+  docker-deploy:
+    name: Re-deploy Docker Image
+    runs-on: ubuntu-latest
+    needs: [docker-push]
+    steps:
+    - name: docker redeploy
+      uses: fifsky/ssh-action@master
+      with:
+        command: |
+          cd plancton_visualizer_server
+          echo pull the new image. First login in...
+          sudo docker login https://docker.pkg.github.com -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+          echo Login in Done.
+          echo Downloading the new image...
+          sudo docker pull docker.pkg.github.com/garciacelisandres/plancton_visualizer_server/plancton_visualizer_server:latest
+          echo Done.
+          echo Stopping old image...
+          sudo docker container stop plancton_visualizer_server_container
+          echo Done.
+          echo Deleting untagged images...
+          sudo docker rmi -f $(sudo docker images | grep none | tr -s ' ' | cut -d ' ' -f 3)
+          echo Done.
+          echo Running new container...
+          sudo docker run -d --rm -p 51000:51000 --name plancton_visualizer_server_container -v ${{ secrets.CERTFILE }}:/code/fullchain.pem -v ${{ secrets.KEYFILE }}:/code/priv.pem --env-file .env docker.pkg.github.com/garciacelisandres/plancton_visualizer_server/plancton_visualizer_server:latest
+          echo Done
+        host: ${{ secrets.WEB_HOST }}
+        user: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        args: "-tt -v"

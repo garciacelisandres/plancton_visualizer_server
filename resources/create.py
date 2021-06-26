@@ -1,7 +1,10 @@
 import logging
+from os import environ
 
 from flask import Flask, request
 from flask_cors import CORS
+from flask_talisman import Talisman
+from flask_seasurf import SeaSurf
 
 from database.database_api import init_db
 from resources.conf import config_by_name
@@ -19,9 +22,24 @@ def _handle_api_error_404(error):
 
 def create_app(config_name: str) -> Flask:
     # Initialize resources
-    app = Flask("plancton_visualizer_server")
-    # Add CORS
+    app = Flask(__name__)
+    # Add CORS and security middlewares
     CORS(app)
+    if config_name == "prod":
+        csp = {
+            "report-uri": "\'none\'",
+            "default-src": "\'self\'",
+            "script-src": "\'none\'",
+            "style-src": "\'none\'",
+            "worker-src": "\'none\'",
+            "object-src": "\'none\'",
+            "base-uri": "\'self\'",
+            "frame-ancestors": "\'none\'",
+            "form-action": "\'none\'",
+            "require-trusted-types-for": "\'script\'",
+        }
+        Talisman(app, content_security_policy=csp)  # adds CSP and another security preventions
+    # SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
     init_db(app.config["MONGODB"]["URL"], app.config["MONGODB"]["DATABASE"])
@@ -34,6 +52,11 @@ def create_app(config_name: str) -> Flask:
     app.register_error_handler(404, _handle_api_error_404)
 
     # Configure the logging for the API
-    logging.basicConfig(format="[%(asctime)s] API - %(levelname)s: %(message)s", filename="../logs.txt", level=logging.INFO)
+    logging.basicConfig(
+        format="[%(asctime)s] API - %(levelname)s: %(message)s",
+        filemode="a",
+        filename=f"{environ.get('CONTEXT')}api.log",
+        level=logging.INFO
+    )
 
     return app
