@@ -5,5 +5,5 @@ results/
 venv/
 model.pt
 *.zip
-.*
+.dockerignore
 *.log

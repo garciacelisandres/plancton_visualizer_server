@@ -6,13 +6,13 @@ from pytest_mock import MockerFixture
 from resources.create import create_app
 from util.customerrors import InvalidDateRangeError, DatabaseConnectionError
 
-sample_list = [
+mock_sample_list = [
     {"_id": 1, "name": "sample1"},
     {"_id": 2, "name": "sample2"},
     {"_id": 3, "name": "sample3"}
 ]
 
-sample_list_processed = [
+processed_sample_list = [
     {"id": 1, "name": "sample1"},
     {"id": 2, "name": "sample2"},
     {"id": 3, "name": "sample3"}
@@ -60,44 +60,84 @@ def test_api_fetch_samples_empty(client, mocker: MockerFixture):
 
 
 def test_api_fetch_samples_params(client, mocker: MockerFixture):
+    mock_sample_list_copy = [
+        {"_id": 1, "name": "sample1"},
+        {"_id": 2, "name": "sample2"},
+        {"_id": 3, "name": "sample3"}
+    ]
     patcher = mocker.patch(
         "resources.routes.get_samples",
-        return_value=sample_list
+        return_value=mock_sample_list_copy
     )
-
     # Test with no parameters
     res = client.get("/api/v0.1/samples")
     assert res.status_code == 200
     fetched = json.loads(res.data)
-    assert fetched["samples"] == sample_list
+    assert fetched["samples"] == processed_sample_list
     patcher.assert_called_once_with(None, None, None, None)
 
+    mock_sample_list_copy = [
+        {"_id": 1, "name": "sample1"},
+        {"_id": 2, "name": "sample2"},
+        {"_id": 3, "name": "sample3"}
+    ]
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        return_value=mock_sample_list_copy
+    )
     # Test with "sample_classes" param
     res = client.get("/api/v0.1/samples?sample_classes=1,2")
     assert res.status_code == 200
     fetched = json.loads(res.data)
-    assert fetched["samples"] == sample_list
+    assert fetched["samples"] == processed_sample_list
     patcher.assert_called_with("1,2", None, None, None)
 
+    mock_sample_list_copy = [
+        {"_id": 1, "name": "sample1"},
+        {"_id": 2, "name": "sample2"},
+        {"_id": 3, "name": "sample3"}
+    ]
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        return_value=mock_sample_list_copy
+    )
     # Test with "start_time" param
     res = client.get("/api/v0.1/samples?start_time=1")
     assert res.status_code == 200
     fetched = json.loads(res.data)
-    assert fetched["samples"] == sample_list
+    assert fetched["samples"] == processed_sample_list
     patcher.assert_called_with(None, "1", None, None)
 
+    mock_sample_list_copy = [
+        {"_id": 1, "name": "sample1"},
+        {"_id": 2, "name": "sample2"},
+        {"_id": 3, "name": "sample3"}
+    ]
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        return_value=mock_sample_list_copy
+    )
     # Test with "end_time" param
     res = client.get("/api/v0.1/samples?end_time=1")
     assert res.status_code == 200
     fetched = json.loads(res.data)
-    assert fetched["samples"] == sample_list
+    assert fetched["samples"] == processed_sample_list
     patcher.assert_called_with(None, None, "1", None)
 
+    mock_sample_list_copy = [
+        {"_id": 1, "name": "sample1"},
+        {"_id": 2, "name": "sample2"},
+        {"_id": 3, "name": "sample3"}
+    ]
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        return_value=mock_sample_list_copy
+    )
     # Test with "quant_method" param
     res = client.get("/api/v0.1/samples?quant_method=1")
     assert res.status_code == 200
     fetched = json.loads(res.data)
-    assert fetched["samples"] == sample_list
+    assert fetched["samples"] == processed_sample_list
     patcher.assert_called_with(None, None, None, "1")
 
 
