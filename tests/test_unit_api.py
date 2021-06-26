@@ -12,10 +12,22 @@ sample_list = [
     {"_id": 3, "name": "sample3"}
 ]
 
+sample_list_processed = [
+    {"id": 1, "name": "sample1"},
+    {"id": 2, "name": "sample2"},
+    {"id": 3, "name": "sample3"}
+]
+
 class_list = [
     {"_id": 1, "name": "class1"},
     {"_id": 2, "name": "class1"},
     {"_id": 3, "name": "class1"}
+]
+
+class_list_processed = [
+    {"id": 1, "name": "class1"},
+    {"id": 2, "name": "class1"},
+    {"id": 3, "name": "class1"}
 ]
 
 
