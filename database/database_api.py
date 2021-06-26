@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pymongo import MongoClient
 
 from database.errorhandlers import errorlogger, connectionlosthandler
@@ -81,7 +82,7 @@ class Database:
     @errorlogger
     @connectionlosthandler
     def get_class(self, class_id):
-        class_obj = self.db.classes.find_one({"_id": class_id})
+        class_obj = self.db.classes.find_one({"_id": ObjectId(class_id)})
         return class_obj
 
 

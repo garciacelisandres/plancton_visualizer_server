@@ -50,5 +50,12 @@ def create_app(config_name: str) -> Flask:
     # Register the 404 error handler manually, since it wouldn't be called otherwise
     app.register_error_handler(404, _handle_api_error_404)
 
+    # Configure the logging for the API
+    logging.basicConfig(
+        format="[%(asctime)s] API - %(levelname)s: %(message)s",
+        filemode="a",
+        filename=f"{environ.get('CONTEXT')}api.log",
+        level=logging.INFO
+    )
 
     return app
