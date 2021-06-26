@@ -4,6 +4,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from resources.create import create_app
+from util.customerrors import InvalidDateRangeError, DatabaseConnectionError
 
 sample_list = [
     {"_id": 1, "name": "sample1"},
@@ -39,7 +40,7 @@ def test_api_fetch_endpoints(client):
 
 
 def test_api_fetch_samples_empty(client, mocker: MockerFixture):
-    mocker.patch("services.sample_service.get_samples", return_value=[])
+    mocker.patch("resources.routes.get_samples", return_value=[])
     res = client.get("/api/v0.1/samples")
     assert res.status_code == 200
     fetched = json.loads(res.data)
@@ -88,14 +89,59 @@ def test_api_fetch_samples_params(client, mocker: MockerFixture):
     patcher.assert_called_with(None, None, None, "1")
 
 
-def test_api_fetch_classes_empty(client):
+def test_api_fetch_samples_params_errors(client, mocker: MockerFixture):
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        side_effect=InvalidDateRangeError
+    )
+    # Test with "start_time" param greater than "end_time" param
+    res = client.get("/api/v0.1/samples?start_time=2&end_time=1")
+    res = json.loads(res.data)
+    assert res["status"] == 400
+    assert res["code"] == "Bad request. \"start_time\" cannot be greater than \"end_time\"."
+    patcher.assert_called_with(None, "2", "1", None)
+
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        side_effect=DatabaseConnectionError
+    )
+    # Test with database connection error
+    res = client.get("/api/v0.1/samples")
+    res = json.loads(res.data)
+    assert res["status"] == 500
+    assert res["code"] == "A connection error occurred. If this keeps happening, " \
+                          "contact the administrator of the system."
+    patcher.assert_called_with(None, None, None, None)
+
+    patcher = mocker.patch(
+        "resources.routes.get_samples",
+        side_effect=Exception
+    )
+    # Test with generic error
+    res = client.get("/api/v0.1/samples")
+    res = json.loads(res.data)
+    assert res["status"] == 500
+    assert res["code"] == "An unexpected error occurred. If this keeps happening, " \
+                          "contact the administrator of the system."
+    patcher.assert_called_with(None, None, None, None)
+
+
+def test_api_fetch_classes_empty(client, mocker: MockerFixture):
+    mocker.patch(
+        "resources.routes.get_classes",
+        return_value=[]
+    )
     res = client.get("/api/v0.1/samples/classes")
     assert res.status_code == 200
     fetched = json.loads(res.data)
     assert fetched["classes"] == []
 
 
-def test_api_fetch_class_empty(client):
+def test_api_fetch_class_empty(client, mocker: MockerFixture):
+    mocker.patch(
+        "resources.routes.get_class",
+        return_value=None
+    )
     res = client.get("/api/v0.1/samples/classes/1")
     assert res.status_code == 200
     fetched = json.loads(res.data)
