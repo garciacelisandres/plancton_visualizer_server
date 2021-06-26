@@ -32,7 +32,8 @@ class_list_processed = [
 
 
 @pytest.fixture
-def client():
+def client(mocker: MockerFixture):
+    mocker.patch("resources.create.init_db")
     app = create_app("test")
     client = app.test_client()
     return client
