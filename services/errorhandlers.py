@@ -9,6 +9,6 @@ def errorlogger(func):
             return func(*args, **kwargs)
         except Exception as e:
             logging.error("The following error occurred: %s" % e)
-            # raise e
+            raise e
 
     return wrapper_errorlogger

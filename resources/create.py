@@ -8,7 +8,7 @@ from flask_seasurf import SeaSurf
 
 from database.database_api import init_db
 from resources.conf import config_by_name
-from resources.errorhandlers import api_errors, not_found_handler
+from resources.errorhandlers import not_found_handler
 from resources.routes import api
 from resources.util import CustomJSONEncoder
 
@@ -47,16 +47,8 @@ def create_app(config_name: str) -> Flask:
 
     # Register the routes and error handlers of the API
     app.register_blueprint(api, url_prefix="/api/v0.1")
-    app.register_blueprint(api_errors, url_prefix="/api/v0.1")
     # Register the 404 error handler manually, since it wouldn't be called otherwise
     app.register_error_handler(404, _handle_api_error_404)
 
-    # Configure the logging for the API
-    logging.basicConfig(
-        format="[%(asctime)s] API - %(levelname)s: %(message)s",
-        filemode="a",
-        filename=f"{environ.get('CONTEXT')}api.log",
-        level=logging.INFO
-    )
 
     return app

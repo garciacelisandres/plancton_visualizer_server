@@ -6,8 +6,8 @@ from json import JSONEncoder
 from bson import ObjectId
 
 
-def build_response(code, **kwargs):
-    response_dict = {"code": code}
+def build_response(status, **kwargs):
+    response_dict = {"status": status}
     for key, value in kwargs.items():
         response_dict[key] = value
     return jsonify(response_dict)
