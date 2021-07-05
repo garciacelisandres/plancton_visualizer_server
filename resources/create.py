@@ -13,8 +13,8 @@ from resources.errorhandlers import not_found_handler
 from resources.routes import api
 from resources.util import CustomJSONEncoder
 
-from dotenv import load_dotenv
-load_dotenv(dotenv_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), '.env'))
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 
 def _handle_api_error_404(error):
