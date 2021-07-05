@@ -12,6 +12,9 @@ from resources.errorhandlers import not_found_handler
 from resources.routes import api
 from resources.util import CustomJSONEncoder
 
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="../.env")
+
 
 def _handle_api_error_404(error):
     if request.path.startswith('/api/v0.1'):
