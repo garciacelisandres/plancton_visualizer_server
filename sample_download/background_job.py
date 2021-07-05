@@ -1,5 +1,7 @@
 import threading
 import time
+import zipfile
+import os
 from os import environ
 
 import logging
@@ -38,10 +40,15 @@ class BackgroundJob:
                 self.last_downloaded_filename
             )
             if content_downloaded:
-                load(filename, f'{environ.get("CONTEXT")}{environ.get("LOAD_DESTINATION_DIR")}')
-                downloaded_filename = filename.split(".")[0]
-                predict(downloaded_filename)
-                self.last_downloaded_filename = downloaded_filename
+                try:
+                    load(filename, f'{environ.get("CONTEXT")}{environ.get("LOAD_DESTINATION_DIR")}')
+                    downloaded_filename = filename.split(".")[0]
+                    predict(downloaded_filename)
+                    self.last_downloaded_filename = downloaded_filename
+                except zipfile.BadZipfile:
+                    os.remove(filename)
+                    logging.warning("File downloaded was not a ZIP file. Skipping unzipping operation.")
+                    return
 
             time.sleep(self.interval)
 

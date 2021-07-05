@@ -39,7 +39,7 @@ def create_app(config_name: str) -> Flask:
             "require-trusted-types-for": "\'script\'",
         }
         Talisman(app, content_security_policy=csp)  # adds CSP and another security preventions
-    # SeaSurf(app)  # prevents CSRF
+        # SeaSurf(app)  # prevents CSRF
     # Add configuration
     app.config.from_object(config_by_name[config_name])
     init_db(app.config["MONGODB"]["URL"], app.config["MONGODB"]["DATABASE"])
@@ -49,6 +49,12 @@ def create_app(config_name: str) -> Flask:
     app.register_blueprint(api, url_prefix="/api/v0.1")
     # Register the 404 error handler manually, since it wouldn't be called otherwise
     app.register_error_handler(404, _handle_api_error_404)
+
+    # Execute background sample download job if specified
+    exec_back_job = bool(int(environ.get('BACKGROUND_JOB')))
+    if exec_back_job:
+        from sample_download.background_job import BackgroundJob
+        BackgroundJob(1200, True)
 
     # Configure the logging for the API
     logging.basicConfig(
