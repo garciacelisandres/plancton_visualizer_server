@@ -1,7 +1,8 @@
+import os
 from os import environ
 
 from dotenv import load_dotenv
-load_dotenv(dotenv_path="../.env")
+load_dotenv(dotenv_path=os.path.join(os.path.abspath(os.path.dirname(__file__)), '.env'))
 
 
 class Config:
