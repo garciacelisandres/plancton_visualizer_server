@@ -1,2 +1,2 @@
 # plancton_visualizer_server
-Server-side part of the plancton-data-visualization project.
+Server-side part of the plankton-data-visualization project. Provides the data to render with the **plancton_visualizer** repository.
